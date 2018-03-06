@@ -1,0 +1,2 @@
+# mybatis-ext
+使用mybatis时常用的一些typehandler、plugin、interceptor以及mapper的封装等
