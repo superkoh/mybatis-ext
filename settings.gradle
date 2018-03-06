@@ -1,1 +1,4 @@
 rootProject.name = 'mybatis-ext'
+
+include 'mybatis-ext-core'
+include 'mybatis-ext-generator'
