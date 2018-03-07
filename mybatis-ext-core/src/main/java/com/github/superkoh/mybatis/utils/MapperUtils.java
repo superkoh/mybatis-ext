@@ -2,7 +2,7 @@ package com.github.superkoh.mybatis.utils;
 
 import com.github.superkoh.mybatis.mapper.BaseMapperWithPK;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import lombok.val;
 import org.apache.commons.lang3.ClassUtils;
 
 public class MapperUtils {
@@ -16,8 +16,8 @@ public class MapperUtils {
               .replace("Mapper", "") + " not found");
     }
     try {
-      Method m = r.getClass().getMethod("getIsDeleted");
-      Boolean isDeleted = (Boolean) m.invoke(r);
+      val m = r.getClass().getMethod("getIsDeleted");
+      val isDeleted = (Boolean) m.invoke(r);
       if (isDeleted) {
         throw new IllegalArgumentException(
             ClassUtils.getAllInterfaces(mapper.getClass()).get(0).getSimpleName()
