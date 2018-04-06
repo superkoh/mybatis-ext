@@ -3,7 +3,7 @@ package com.github.superkoh.mybatis.mapper;
 import java.util.List;
 import org.apache.ibatis.annotations.Param;
 
-public interface BaseMapper<R, RE> {
+public interface BaseMapper<R, RE> extends BaseMapper2 {
 
   long countByExample(RE example);
 
