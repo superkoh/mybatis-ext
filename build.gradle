@@ -1,11 +1,5 @@
 allprojects {
-    apply plugin: 'java'
-    apply plugin: 'maven-publish'
-
-    version '1.0.4'
-
-    sourceCompatibility = 1.8
-    targetCompatibility = 1.8
+    version '0.0.1'
 
     repositories {
         maven {
@@ -17,15 +11,24 @@ allprojects {
 }
 
 subprojects {
-    task sourceJar(type: Jar) {
-        from sourceSets.main.allJava
+    apply plugin: 'java'
+    apply plugin: 'maven'
+
+    sourceCompatibility = 1.8 // java 8
+    targetCompatibility = 1.8
+
+    task sourcesJar(type: Jar, dependsOn: classes) {
+        classifier = 'sources'
+        from sourceSets.main.allSource
     }
 
-    publishing {
-        repositories {
-            maven {
-                url "file:///Users/KOH/Projects/superkoh/com.github.superkoh/maven"
-            }
-        }
+    task javadocJar(type: Jar, dependsOn: javadoc) {
+        classifier = 'javadoc'
+        from javadoc.destinationDir
+    }
+
+    artifacts {
+        archives sourcesJar
+        archives javadocJar
     }
 }

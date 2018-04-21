@@ -2,24 +2,6 @@ plugins {
     id 'io.franzbecker.gradle-lombok' version '1.11'
 }
 
-group 'com.github.superkoh.mybatis'
-
-publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            groupId group
-            artifactId 'mybatis-ext-core'
-            version version
-
-            from components.java
-
-            artifact sourceJar {
-                classifier "sources"
-            }
-        }
-    }
-}
-
 dependencies {
     compile group: 'org.mybatis', name: 'mybatis', version: '3.4.5'
     compile group: 'org.mybatis', name: 'mybatis-typehandlers-jsr310', version: '1.0.2'

@@ -1,21 +1,3 @@
-group 'com.github.superkoh.mybatis'
-
-publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            groupId group
-            artifactId 'mybatis-ext-spring-boot-starter'
-            version version
-
-            from components.java
-
-            artifact sourceJar {
-                classifier "sources"
-            }
-        }
-    }
-}
-
 dependencies {
     compile project(':mybatis-ext-core')
     compile("org.springframework.boot:spring-boot-starter:2.0.0.RELEASE")
