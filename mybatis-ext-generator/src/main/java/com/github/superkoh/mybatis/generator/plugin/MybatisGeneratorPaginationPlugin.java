@@ -1,7 +1,6 @@
 package com.github.superkoh.mybatis.generator.plugin;
 
 import java.util.List;
-import lombok.val;
 import org.apache.commons.lang3.StringUtils;
 import org.mybatis.generator.api.IntrospectedTable;
 import org.mybatis.generator.api.PluginAdapter;
@@ -10,6 +9,7 @@ import org.mybatis.generator.api.dom.java.FullyQualifiedJavaType;
 import org.mybatis.generator.api.dom.java.JavaVisibility;
 import org.mybatis.generator.api.dom.java.Method;
 import org.mybatis.generator.api.dom.java.Parameter;
+import org.mybatis.generator.api.dom.java.PrimitiveTypeWrapper;
 import org.mybatis.generator.api.dom.java.TopLevelClass;
 import org.mybatis.generator.api.dom.xml.Attribute;
 import org.mybatis.generator.api.dom.xml.TextElement;
@@ -25,7 +25,8 @@ public class MybatisGeneratorPaginationPlugin extends PluginAdapter {
   @Override
   public boolean modelExampleClassGenerated(TopLevelClass topLevelClass,
       IntrospectedTable introspectedTable) {
-    val integerWrapper = FullyQualifiedJavaType.getIntInstance().getPrimitiveTypeWrapper();
+    PrimitiveTypeWrapper integerWrapper = FullyQualifiedJavaType.getIntInstance()
+        .getPrimitiveTypeWrapper();
 
     addField(topLevelClass, "limit", integerWrapper);
     addField(topLevelClass, "offset", integerWrapper);
@@ -35,20 +36,20 @@ public class MybatisGeneratorPaginationPlugin extends PluginAdapter {
 
   private void addField(TopLevelClass topLevelClass, String fieldName,
       FullyQualifiedJavaType type) {
-    val field = new Field();
+    Field field = new Field();
     field.setName(fieldName);
     field.setType(type);
     field.setVisibility(JavaVisibility.PRIVATE);
     topLevelClass.addField(field);
 
-    val setMethod = new Method();
+    Method setMethod = new Method();
     setMethod.setVisibility(JavaVisibility.PUBLIC);
     setMethod.setName("set" + StringUtils.capitalize(fieldName));
     setMethod.addParameter(new Parameter(type, fieldName));
     setMethod.addBodyLine("this." + fieldName + " = " + fieldName + ";");
     topLevelClass.addMethod(setMethod);
 
-    val getMethod = new Method();
+    Method getMethod = new Method();
     getMethod.setVisibility(JavaVisibility.PUBLIC);
     getMethod.setReturnType(type);
     getMethod.setName("get" + StringUtils.capitalize(fieldName));
@@ -59,15 +60,15 @@ public class MybatisGeneratorPaginationPlugin extends PluginAdapter {
   @Override
   public boolean sqlMapSelectByExampleWithoutBLOBsElementGenerated(XmlElement element,
       IntrospectedTable introspectedTable) {
-    val ifLimitNotNullElement = new XmlElement("if");
+    XmlElement ifLimitNotNullElement = new XmlElement("if");
     ifLimitNotNullElement.addAttribute(new Attribute("test", "limit != null"));
 
-    val ifOffsetNotNullElement = new XmlElement("if");
+    XmlElement ifOffsetNotNullElement = new XmlElement("if");
     ifOffsetNotNullElement.addAttribute(new Attribute("test", "offset != null"));
     ifOffsetNotNullElement.addElement(new TextElement("limit ${offset}, ${limit}"));
     ifLimitNotNullElement.addElement(ifOffsetNotNullElement);
 
-    val ifOffsetNullElement = new XmlElement("if");
+    XmlElement ifOffsetNullElement = new XmlElement("if");
     ifOffsetNullElement.addAttribute(new Attribute("test", "offset == null"));
     ifOffsetNullElement.addElement(new TextElement("limit ${limit}"));
     ifLimitNotNullElement.addElement(ifOffsetNullElement);
@@ -80,15 +81,15 @@ public class MybatisGeneratorPaginationPlugin extends PluginAdapter {
   @Override
   public boolean sqlMapSelectByExampleWithBLOBsElementGenerated(XmlElement element,
       IntrospectedTable introspectedTable) {
-    val ifLimitNotNullElement = new XmlElement("if");
+    XmlElement ifLimitNotNullElement = new XmlElement("if");
     ifLimitNotNullElement.addAttribute(new Attribute("test", "limit != null"));
 
-    val ifOffsetNotNullElement = new XmlElement("if");
+    XmlElement ifOffsetNotNullElement = new XmlElement("if");
     ifOffsetNotNullElement.addAttribute(new Attribute("test", "offset != null"));
     ifOffsetNotNullElement.addElement(new TextElement("limit ${offset}, ${limit}"));
     ifLimitNotNullElement.addElement(ifOffsetNotNullElement);
 
-    val ifOffsetNullElement = new XmlElement("if");
+    XmlElement ifOffsetNullElement = new XmlElement("if");
     ifOffsetNullElement.addAttribute(new Attribute("test", "offset == null"));
     ifOffsetNullElement.addElement(new TextElement("limit ${limit}"));
     ifLimitNotNullElement.addElement(ifOffsetNullElement);
