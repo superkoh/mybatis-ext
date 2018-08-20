@@ -15,6 +15,7 @@ import org.mybatis.generator.api.dom.xml.Attribute;
 import org.mybatis.generator.api.dom.xml.TextElement;
 import org.mybatis.generator.api.dom.xml.XmlElement;
 
+@Deprecated
 public class MybatisGeneratorPaginationPlugin extends PluginAdapter {
 
   @Override
