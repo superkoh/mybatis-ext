@@ -6,11 +6,7 @@ public interface Pageable extends Limitable {
 
   int getPageSize();
 
-  default Integer getLimit() {
-    return getPageSize();
-  }
+  Integer getLimit();
 
-  default Integer getOffset() {
-    return getPageSize() * (getPageNo() - 1);
-  }
+  Integer getOffset();
 }
