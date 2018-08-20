@@ -39,6 +39,16 @@ public class PageableList<T> extends ArrayList<T> implements Pageable {
   }
 
   @Override
+  public Integer getLimit() {
+    return pageSize;
+  }
+
+  @Override
+  public Integer getOffset() {
+    return (pageNo - 1) * pageSize;
+  }
+
+  @Override
   public String getOrderBy() {
     return orderBy;
   }
