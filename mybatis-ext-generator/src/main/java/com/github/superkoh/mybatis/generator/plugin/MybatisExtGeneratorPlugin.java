@@ -28,28 +28,21 @@ import org.mybatis.generator.api.dom.xml.XmlElement;
 
 public class MybatisExtGeneratorPlugin extends PluginAdapter {
 
+  private boolean hasQueryType = false;
+
   @Override
   public boolean validate(List<String> warnings) {
     String queryType = this.getProperties().getProperty("queryType");
-    if (null == queryType) {
-      warnings.add("no query type");
-      return false;
-    }
-    try {
-      Class clazz = Class.forName(queryType);
-      boolean hasInterface = false;
-      for (Class c : clazz.getInterfaces()) {
-        if (c.equals(Limitable.class)) {
-          hasInterface = true;
+    if (null != queryType) {
+      hasQueryType = true;
+      try {
+        Class clazz = Class.forName(queryType);
+        if (!Limitable.class.isAssignableFrom(clazz)) {
+          throw new IllegalArgumentException("query type need implements Pageable or Limitable");
         }
+      } catch (ClassNotFoundException e) {
+        throw new IllegalArgumentException("query type is illegal");
       }
-      if (!hasInterface) {
-        warnings.add("query type need implements Pageable or Limitable");
-        return false;
-      }
-    } catch (ClassNotFoundException e) {
-      warnings.add("query type is illegal");
-      return false;
     }
     return true;
   }
@@ -57,21 +50,28 @@ public class MybatisExtGeneratorPlugin extends PluginAdapter {
   @Override
   public boolean clientGenerated(Interface interfaze, TopLevelClass topLevelClass,
       IntrospectedTable introspectedTable) {
-    FullyQualifiedJavaType queryType = new FullyQualifiedJavaType(
-        this.getProperties().getProperty("queryType"));
-    interfaze.addImportedType(queryType);
+    if (hasQueryType) {
+      FullyQualifiedJavaType queryType = new FullyQualifiedJavaType(
+          this.getProperties().getProperty("queryType"));
+      interfaze.addImportedType(queryType);
 
-    FullyQualifiedJavaType pageableListType = new FullyQualifiedJavaType(
-        PageableList.class.getCanonicalName());
-    interfaze.addImportedType(pageableListType);
+      FullyQualifiedJavaType pageableListType = new FullyQualifiedJavaType(
+          PageableList.class.getCanonicalName());
+      interfaze.addImportedType(pageableListType);
 
-    Method selectPageByQuery = new Method();
-    clientSelectPageByQueryMethodGenerated(selectPageByQuery, interfaze, introspectedTable);
-    interfaze.addMethod(selectPageByQuery);
+      Method selectPageByQuery = new Method();
+      clientSelectPageByQueryMethodGenerated(selectPageByQuery, interfaze, introspectedTable);
+      interfaze.addMethod(selectPageByQuery);
 
-    Method countByQuery = new Method();
-    clientCountByQueryMethodGenerated(countByQuery, interfaze, introspectedTable);
-    interfaze.addMethod(countByQuery);
+      Method countByQuery = new Method();
+      clientCountByQueryMethodGenerated(countByQuery, interfaze, introspectedTable);
+      interfaze.addMethod(countByQuery);
+
+      Method selectPageableListByQuery = new Method();
+      clientSelectPageableListByQueryMethodGenerated(selectPageableListByQuery, interfaze,
+          introspectedTable);
+      interfaze.addMethod(selectPageableListByQuery);
+    }
 
     return super.clientGenerated(interfaze, topLevelClass, introspectedTable);
   }
@@ -148,18 +148,19 @@ public class MybatisExtGeneratorPlugin extends PluginAdapter {
   public boolean sqlMapDocumentGenerated(Document document, IntrospectedTable introspectedTable) {
 
     XmlElement rootElement = document.getRootElement();
+    if (hasQueryType) {
+      XmlElement queryWhereClause = new XmlElement("sql");
+      sqlMapQueryWhereClauseElementGenerated(queryWhereClause, introspectedTable);
+      rootElement.addElement(queryWhereClause);
 
-    XmlElement queryWhereClause = new XmlElement("sql");
-    sqlMapQueryWhereClauseElementGenerated(queryWhereClause, introspectedTable);
-    rootElement.addElement(queryWhereClause);
+      XmlElement selectPageByQuery = new XmlElement("select");
+      sqlMapSelectPageByQueryElementGenerated(selectPageByQuery, introspectedTable);
+      rootElement.addElement(selectPageByQuery);
 
-    XmlElement selectPageByQuery = new XmlElement("select");
-    sqlMapSelectPageByQueryElementGenerated(selectPageByQuery, introspectedTable);
-    rootElement.addElement(selectPageByQuery);
-
-    XmlElement countByQuery = new XmlElement("select");
-    sqlMapCountByQueryElementGenerated(countByQuery, introspectedTable);
-    rootElement.addElement(countByQuery);
+      XmlElement countByQuery = new XmlElement("select");
+      sqlMapCountByQueryElementGenerated(countByQuery, introspectedTable);
+      rootElement.addElement(countByQuery);
+    }
 
     return super.sqlMapDocumentGenerated(document, introspectedTable);
   }
