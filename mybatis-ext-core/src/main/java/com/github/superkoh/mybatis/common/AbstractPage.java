@@ -13,6 +13,9 @@ abstract public class AbstractPage implements Pageable {
   @QueryIgnored
   private String orderBy;
 
+  public AbstractPage() {
+  }
+
   public AbstractPage(int pageSize, int pageNo) {
     this.pageSize = pageSize;
     this.pageNo = pageNo;

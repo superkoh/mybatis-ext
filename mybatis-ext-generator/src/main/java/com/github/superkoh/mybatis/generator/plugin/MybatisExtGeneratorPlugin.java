@@ -184,7 +184,7 @@ public class MybatisExtGeneratorPlugin extends PluginAdapter {
             return -1;
           }
           if (!f1IsIndex && f2IsIndex) {
-            return -1;
+            return 1;
           }
           if (!f1IsIndex && !f2IsIndex) {
             return 0;
