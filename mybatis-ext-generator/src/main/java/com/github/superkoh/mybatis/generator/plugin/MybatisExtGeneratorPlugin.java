@@ -117,7 +117,7 @@ public class MybatisExtGeneratorPlugin extends PluginAdapter {
     Parameter parameter = new Parameter(
         new FullyQualifiedJavaType(this.getProperties().getProperty("queryType")), "query");
     method.addParameter(parameter);
-    method.addBodyLine("long count = this.countByQuery(query)");
+    method.addBodyLine("long count = this.countByQuery(query);");
     method.addBodyLine("List<" + domainObjectName + "> list;");
     method.addBodyLine("if (count > 0) {");
     method.addBodyLine("  list = this.selectPageByQuery(query);");
