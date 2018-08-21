@@ -1,5 +1,7 @@
 package com.github.superkoh.mybatis.generator.plugin;
 
+import com.github.superkoh.mybatis.annotation.QueryExpr;
+import com.github.superkoh.mybatis.annotation.QueryExprType;
 import com.github.superkoh.mybatis.annotation.QueryIgnored;
 import com.github.superkoh.mybatis.annotation.QueryIndex;
 import com.github.superkoh.mybatis.common.Limitable;
@@ -336,7 +338,15 @@ public class MybatisExtGeneratorPlugin extends PluginAdapter {
       ifElement.addElement(new TextElement("AND `" + a + "` like #{" + p + "}"));
     } else {
       ifElement.addAttribute(new Attribute("test", "query." + p + " != null"));
-      ifElement.addElement(new TextElement("AND `" + a + "` = #{query." + p + "}"));
+      if (field.isAnnotationPresent(QueryExpr.class)) {
+        QueryExpr exprAnnotation = field.getAnnotation(QueryExpr.class);
+        QueryExprType exprType = exprAnnotation.type();
+        String targetColumn = exprAnnotation.targetColumn();
+        ifElement.addElement(new TextElement(
+            "AND `" + targetColumn + "` " + exprType.getExpr() + " #{query." + p + "}"));
+      } else {
+        ifElement.addElement(new TextElement("AND `" + a + "` = #{query." + p + "}"));
+      }
     }
     queryWhereClause.addElement(ifElement);
   }
