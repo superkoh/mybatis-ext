@@ -39,7 +39,7 @@ public class MybatisExtGeneratorPlugin extends PluginAdapter {
         .filter(k -> k.equals("queryType"))
         .allMatch(k -> {
           try {
-            Class clazz = Class.forName((String) k);
+            Class clazz = Class.forName(this.getProperties().getProperty("queryType"));
             if (!Limitable.class.isAssignableFrom(clazz)) {
               return false;
             }
