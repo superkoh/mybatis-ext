@@ -59,7 +59,7 @@ public class MybatisExtGeneratorPlugin extends PluginAdapter {
       IntrospectedTable introspectedTable) {
     if (introspectedTable.getTableConfiguration().getProperties().containsKey("queryType")) {
       FullyQualifiedJavaType queryType = new FullyQualifiedJavaType(
-          this.getProperties().getProperty("queryType"));
+          introspectedTable.getTableConfiguration().getProperties().getProperty("queryType"));
       interfaze.addImportedType(queryType);
 
       FullyQualifiedJavaType pageableListType = new FullyQualifiedJavaType(
@@ -154,7 +154,8 @@ public class MybatisExtGeneratorPlugin extends PluginAdapter {
 
     XmlElement rootElement = document.getRootElement();
     if (introspectedTable.getTableConfiguration().getProperties().containsKey("queryType")) {
-      String queryTypeName = this.getProperties().getProperty("queryType");
+      String queryTypeName = introspectedTable.getTableConfiguration().getProperties()
+          .getProperty("queryType");
       XmlElement queryWhereClause = new XmlElement("sql");
       sqlMapQueryWhereClauseElementGenerated(queryWhereClause, introspectedTable, queryTypeName);
       rootElement.addElement(queryWhereClause);
