@@ -35,16 +35,16 @@ public class MybatisExtGeneratorPlugin extends PluginAdapter {
   @Override
   public boolean validate(List<String> warnings) {
     boolean checkQueryType = this.getContext().getTableConfigurations().parallelStream()
-        .flatMap(c -> c.getProperties().keySet().parallelStream())
-        .filter(k -> k.equals("queryType"))
-        .allMatch(k -> {
-          try {
-            Class clazz = Class.forName(this.getProperties().getProperty("queryType"));
-            if (!Limitable.class.isAssignableFrom(clazz)) {
+        .allMatch(c -> {
+          if (c.getProperties().containsKey("queryType")) {
+            try {
+              Class clazz = Class.forName(c.getProperties().getProperty("queryType"));
+              if (!Limitable.class.isAssignableFrom(clazz)) {
+                return false;
+              }
+            } catch (ClassNotFoundException e) {
               return false;
             }
-          } catch (ClassNotFoundException e) {
-            return false;
           }
           return true;
         });
