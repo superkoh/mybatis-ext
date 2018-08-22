@@ -34,17 +34,22 @@ public class MybatisExtGeneratorPlugin extends PluginAdapter {
 
   @Override
   public boolean validate(List<String> warnings) {
-    String queryType = this.getProperties().getProperty("queryType");
-    if (null != queryType) {
-      hasQueryType = true;
-      try {
-        Class clazz = Class.forName(queryType);
-        if (!Limitable.class.isAssignableFrom(clazz)) {
-          throw new IllegalArgumentException("query type need implements Pageable or Limitable");
-        }
-      } catch (ClassNotFoundException e) {
-        throw new IllegalArgumentException("query type is illegal");
-      }
+    boolean checkQueryType = this.getContext().getTableConfigurations().parallelStream()
+        .flatMap(c -> c.getProperties().keySet().parallelStream())
+        .filter(k -> k.equals("queryType"))
+        .allMatch(k -> {
+          try {
+            Class clazz = Class.forName((String) k);
+            if (!Limitable.class.isAssignableFrom(clazz)) {
+              return false;
+            }
+          } catch (ClassNotFoundException e) {
+            return false;
+          }
+          return true;
+        });
+    if (!checkQueryType) {
+      throw new IllegalArgumentException("query type need implements Pageable or Limitable");
     }
     return true;
   }
@@ -52,7 +57,7 @@ public class MybatisExtGeneratorPlugin extends PluginAdapter {
   @Override
   public boolean clientGenerated(Interface interfaze, TopLevelClass topLevelClass,
       IntrospectedTable introspectedTable) {
-    if (hasQueryType) {
+    if (introspectedTable.getTableConfiguration().getProperties().containsKey("queryType")) {
       FullyQualifiedJavaType queryType = new FullyQualifiedJavaType(
           this.getProperties().getProperty("queryType"));
       interfaze.addImportedType(queryType);
@@ -62,16 +67,17 @@ public class MybatisExtGeneratorPlugin extends PluginAdapter {
       interfaze.addImportedType(pageableListType);
 
       Method selectPageByQuery = new Method();
-      clientSelectPageByQueryMethodGenerated(selectPageByQuery, interfaze, introspectedTable);
+      clientSelectPageByQueryMethodGenerated(selectPageByQuery, interfaze, introspectedTable,
+          queryType);
       interfaze.addMethod(selectPageByQuery);
 
       Method countByQuery = new Method();
-      clientCountByQueryMethodGenerated(countByQuery, interfaze, introspectedTable);
+      clientCountByQueryMethodGenerated(countByQuery, interfaze, introspectedTable, queryType);
       interfaze.addMethod(countByQuery);
 
       Method selectPageableListByQuery = new Method();
       clientSelectPageableListByQueryMethodGenerated(selectPageableListByQuery, interfaze,
-          introspectedTable);
+          introspectedTable, queryType);
       interfaze.addMethod(selectPageableListByQuery);
     }
 
@@ -79,11 +85,10 @@ public class MybatisExtGeneratorPlugin extends PluginAdapter {
   }
 
   public boolean clientSelectPageByQueryMethodGenerated(Method method, Interface interfaze,
-      IntrospectedTable introspectedTable) {
+      IntrospectedTable introspectedTable, FullyQualifiedJavaType queryType) {
     method.setVisibility(JavaVisibility.PUBLIC);
     method.setName("selectPageByQuery");
-    Parameter parameter = new Parameter(
-        new FullyQualifiedJavaType(this.getProperties().getProperty("queryType")), "query");
+    Parameter parameter = new Parameter(queryType, "query");
     parameter.addAnnotation("@Param(\"query\")");
     method.addParameter(parameter);
     method.setReturnType(new FullyQualifiedJavaType(
@@ -93,11 +98,10 @@ public class MybatisExtGeneratorPlugin extends PluginAdapter {
   }
 
   public boolean clientCountByQueryMethodGenerated(Method method, Interface interfaze,
-      IntrospectedTable introspectedTable) {
+      IntrospectedTable introspectedTable, FullyQualifiedJavaType queryType) {
     method.setVisibility(JavaVisibility.PUBLIC);
     method.setName("countByQuery");
-    Parameter parameter = new Parameter(
-        new FullyQualifiedJavaType(this.getProperties().getProperty("queryType")), "query");
+    Parameter parameter = new Parameter(queryType, "query");
     parameter.addAnnotation("@Param(\"query\")");
     method.addParameter(parameter);
     method.setReturnType(new FullyQualifiedJavaType("long"));
@@ -106,7 +110,7 @@ public class MybatisExtGeneratorPlugin extends PluginAdapter {
   }
 
   public boolean clientSelectPageableListByQueryMethodGenerated(Method method, Interface interfaze,
-      IntrospectedTable introspectedTable) {
+      IntrospectedTable introspectedTable, FullyQualifiedJavaType queryType) {
     FullyQualifiedJavaType collectionsType = new FullyQualifiedJavaType(
         Collections.class.getCanonicalName());
     interfaze.addImportedType(collectionsType);
@@ -116,8 +120,7 @@ public class MybatisExtGeneratorPlugin extends PluginAdapter {
     method.setVisibility(JavaVisibility.PUBLIC);
     method.setName("selectPageableListByQuery");
     method.setDefault(true);
-    Parameter parameter = new Parameter(
-        new FullyQualifiedJavaType(this.getProperties().getProperty("queryType")), "query");
+    Parameter parameter = new Parameter(queryType, "query");
     method.addParameter(parameter);
     method.addBodyLine("long count = this.countByQuery(query);");
     method.addBodyLine("List<" + domainObjectName + "> list;");
@@ -150,9 +153,10 @@ public class MybatisExtGeneratorPlugin extends PluginAdapter {
   public boolean sqlMapDocumentGenerated(Document document, IntrospectedTable introspectedTable) {
 
     XmlElement rootElement = document.getRootElement();
-    if (hasQueryType) {
+    if (introspectedTable.getTableConfiguration().getProperties().containsKey("queryType")) {
+      String queryTypeName = this.getProperties().getProperty("queryType");
       XmlElement queryWhereClause = new XmlElement("sql");
-      sqlMapQueryWhereClauseElementGenerated(queryWhereClause, introspectedTable);
+      sqlMapQueryWhereClauseElementGenerated(queryWhereClause, introspectedTable, queryTypeName);
       rootElement.addElement(queryWhereClause);
 
       XmlElement selectPageByQuery = new XmlElement("select");
@@ -168,10 +172,10 @@ public class MybatisExtGeneratorPlugin extends PluginAdapter {
   }
 
   public boolean sqlMapQueryWhereClauseElementGenerated(XmlElement element,
-      IntrospectedTable introspectedTable) {
+      IntrospectedTable introspectedTable, String queryTypeName) {
     Class clazz;
     try {
-      clazz = Class.forName(this.getProperties().getProperty("queryType"));
+      clazz = Class.forName(queryTypeName);
     } catch (ClassNotFoundException e) {
       return false;
     }
