@@ -30,8 +30,6 @@ import org.mybatis.generator.api.dom.xml.XmlElement;
 
 public class MybatisExtGeneratorPlugin extends PluginAdapter {
 
-  private boolean hasQueryType = false;
-
   @Override
   public boolean validate(List<String> warnings) {
     boolean checkQueryType = this.getContext().getTableConfigurations().parallelStream()
@@ -146,7 +144,7 @@ public class MybatisExtGeneratorPlugin extends PluginAdapter {
     FullyQualifiedJavaType type = new FullyQualifiedJavaType(introspectedTable.getExampleType());
     Parameter parameter = new Parameter(type, "example");
     method.addParameter(parameter);
-    if (introspectedTable.hasBLOBColumns()) {
+    if (introspectedTable.getRules().generateRecordWithBLOBsClass()) {
       method.setReturnType(new FullyQualifiedJavaType(introspectedTable.getRecordWithBLOBsType()));
     } else {
       method.setReturnType(new FullyQualifiedJavaType(introspectedTable.getBaseRecordType()));
@@ -278,7 +276,7 @@ public class MybatisExtGeneratorPlugin extends PluginAdapter {
     element.addAttribute(new Attribute("id", "selectOneByExample"));
     element.addAttribute(new Attribute("parameterType", introspectedTable.getExampleType()));
     element.addAttribute(new Attribute("resultMap", introspectedTable.getBaseResultMapId()));
-    if (introspectedTable.hasBLOBColumns()) {
+    if (introspectedTable.getRules().generateRecordWithBLOBsClass()) {
       element.addAttribute(new Attribute("resultType", introspectedTable.getRecordWithBLOBsType()));
     } else {
       element.addAttribute(new Attribute("resultType", introspectedTable.getBaseRecordType()));
