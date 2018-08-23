@@ -146,7 +146,11 @@ public class MybatisExtGeneratorPlugin extends PluginAdapter {
     FullyQualifiedJavaType type = new FullyQualifiedJavaType(introspectedTable.getExampleType());
     Parameter parameter = new Parameter(type, "example");
     method.addParameter(parameter);
-    method.setReturnType(new FullyQualifiedJavaType(introspectedTable.getRecordWithBLOBsType()));
+    if (introspectedTable.hasBLOBColumns()) {
+      method.setReturnType(new FullyQualifiedJavaType(introspectedTable.getRecordWithBLOBsType()));
+    } else {
+      method.setReturnType(new FullyQualifiedJavaType(introspectedTable.getBaseRecordType()));
+    }
 
     return true;
   }
@@ -274,7 +278,11 @@ public class MybatisExtGeneratorPlugin extends PluginAdapter {
     element.addAttribute(new Attribute("id", "selectOneByExample"));
     element.addAttribute(new Attribute("parameterType", introspectedTable.getExampleType()));
     element.addAttribute(new Attribute("resultMap", introspectedTable.getBaseResultMapId()));
-    element.addAttribute(new Attribute("resultType", introspectedTable.getRecordWithBLOBsType()));
+    if (introspectedTable.hasBLOBColumns()) {
+      element.addAttribute(new Attribute("resultType", introspectedTable.getRecordWithBLOBsType()));
+    } else {
+      element.addAttribute(new Attribute("resultType", introspectedTable.getBaseRecordType()));
+    }
     element.addElement(new TextElement(
         "SELECT * FROM `" + introspectedTable.getTableConfiguration().getTableName() + "`"));
     XmlElement ifTestParam = new XmlElement("if");
