@@ -80,6 +80,9 @@ public class MybatisExtGeneratorPlugin extends PluginAdapter {
           introspectedTable, queryType);
       interfaze.addMethod(selectPageableListByQuery);
     }
+    Method selectOneByExample = new Method();
+    clientSelectOneByExampleMethodGenerated(selectOneByExample, interfaze, introspectedTable);
+    interfaze.addMethod(selectOneByExample);
 
     return super.clientGenerated(interfaze, topLevelClass, introspectedTable);
   }
@@ -136,6 +139,18 @@ public class MybatisExtGeneratorPlugin extends PluginAdapter {
     return true;
   }
 
+  public boolean clientSelectOneByExampleMethodGenerated(Method method, Interface interfaze,
+      IntrospectedTable introspectedTable) {
+    method.setVisibility(JavaVisibility.PUBLIC);
+    method.setName("selectOneByExample");
+    FullyQualifiedJavaType type = new FullyQualifiedJavaType(introspectedTable.getExampleType());
+    Parameter parameter = new Parameter(type, "example");
+    method.addParameter(parameter);
+    method.setReturnType(new FullyQualifiedJavaType(introspectedTable.getRecordWithBLOBsType()));
+
+    return true;
+  }
+
   @Override
   public boolean sqlMapGenerated(GeneratedXmlFile sqlMap,
       IntrospectedTable introspectedTable) {
@@ -168,6 +183,10 @@ public class MybatisExtGeneratorPlugin extends PluginAdapter {
       sqlMapCountByQueryElementGenerated(countByQuery, introspectedTable);
       rootElement.addElement(countByQuery);
     }
+
+    XmlElement selectOneByExample = new XmlElement("select");
+    sqlMapSelectOneByExampleElementGenerated(selectOneByExample, introspectedTable);
+    rootElement.addElement(selectOneByExample);
 
     return super.sqlMapDocumentGenerated(document, introspectedTable);
   }
@@ -246,6 +265,25 @@ public class MybatisExtGeneratorPlugin extends PluginAdapter {
     countByQueryWhereInclude.addAttribute(new Attribute("refid", "queryWhereClause"));
     countByQueryWhere.addElement(countByQueryWhereInclude);
     element.addElement(countByQueryWhere);
+
+    return true;
+  }
+
+  public boolean sqlMapSelectOneByExampleElementGenerated(XmlElement element,
+      IntrospectedTable introspectedTable) {
+    element.addAttribute(new Attribute("id", "selectOneByExample"));
+    element.addAttribute(new Attribute("parameterType", introspectedTable.getExampleType()));
+    element.addAttribute(new Attribute("resultMap", introspectedTable.getBaseResultMapId()));
+    element.addAttribute(new Attribute("resultType", introspectedTable.getRecordWithBLOBsType()));
+    element.addElement(new TextElement(
+        "SELECT * FROM `" + introspectedTable.getTableConfiguration().getTableName() + "`"));
+    XmlElement ifTestParam = new XmlElement("if");
+    ifTestParam.addAttribute(new Attribute("test", "_parameter != null"));
+    XmlElement includeExample = new XmlElement("include");
+    includeExample.addAttribute(new Attribute("refid", "Example_Where_Clause"));
+    ifTestParam.addElement(includeExample);
+    element.addElement(ifTestParam);
+    element.addElement(new TextElement("LIMIT 1"));
 
     return true;
   }
