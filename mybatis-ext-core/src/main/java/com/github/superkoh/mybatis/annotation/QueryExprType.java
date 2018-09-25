@@ -6,7 +6,8 @@ public enum QueryExprType {
   GREATER_THAN("&gt;"),
   GREATER_AND_EQUAL_THAN("&gt;="),
   LESS_THAN("&lt;"),
-  LESS_AND_EQUAL_THAN("&lt;=");
+  LESS_AND_EQUAL_THAN("&lt;="),
+  LIKE("LIKE");
 
   private String expr;
 

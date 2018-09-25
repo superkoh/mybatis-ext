@@ -375,20 +375,28 @@ public class MybatisExtGeneratorPlugin extends PluginAdapter {
     String p = field.getName();
     String a = CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, field.getName());
     XmlElement ifElement = new XmlElement("if");
+    QueryExpr exprAnnotation = null;
+    if (field.isAnnotationPresent(QueryExpr.class)) {
+      exprAnnotation = field.getAnnotation(QueryExpr.class);
+    }
     if (field.getType().equals(String.class)) {
       ifElement
           .addAttribute(
               new Attribute("test", "query." + p + " != null and query." + p + " != ''"));
-      XmlElement bindElement = new XmlElement("bind");
-      bindElement.addAttribute(new Attribute("name", p));
-      bindElement.addAttribute(
-          new Attribute("value", "'%' + query.get" + StringUtils.capitalize(p) + "() + '%'"));
-      ifElement.addElement(bindElement);
-      ifElement.addElement(new TextElement("AND `" + a + "` like #{" + p + "}"));
+      if (null != exprAnnotation && !QueryExprType.LIKE.equals(exprAnnotation.type())) {
+        ifElement.addElement(new TextElement(
+            "AND `" + exprAnnotation.targetColumn() + "` " + exprAnnotation.type().getExpr() + " #{query." + p + "}"));
+      } else {
+        XmlElement bindElement = new XmlElement("bind");
+        bindElement.addAttribute(new Attribute("name", p));
+        bindElement.addAttribute(
+            new Attribute("value", "'%' + query.get" + StringUtils.capitalize(p) + "() + '%'"));
+        ifElement.addElement(bindElement);
+        ifElement.addElement(new TextElement("AND `" + a + "` like #{" + p + "}"));
+      }
     } else {
       ifElement.addAttribute(new Attribute("test", "query." + p + " != null"));
-      if (field.isAnnotationPresent(QueryExpr.class)) {
-        QueryExpr exprAnnotation = field.getAnnotation(QueryExpr.class);
+      if (null != exprAnnotation) {
         QueryExprType exprType = exprAnnotation.type();
         String targetColumn = exprAnnotation.targetColumn();
         ifElement.addElement(new TextElement(
